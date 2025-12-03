@@ -1,0 +1,172 @@
+<div class="wrapper main-content-materias">
+  <div class="row mt-5 mb-4">
+    <div class="col-12">
+      <span class="title-perfil">Registro de Materias</span>
+      <br />
+      <span class="subtitle-perfil">Completa el formulario para registrar una nueva materia</span>
+    </div>
+  </div>
+
+  <div class="container materias-form-container">
+    <div class="row">
+      <div class="col-12">
+        <div class="alert alert-primary mb-4" role="alert">
+          <span class="title-table">Formulario de Registro de Materias</span>
+        </div>
+      </div>
+    </div>
+
+    <form>
+      <div class="row g-3">
+        
+        <div class="col-md-3">
+          <label class="form-label">NRC *</label>
+          <input type="text" 
+                 class="form-control" 
+                 [ngClass]="{'is-invalid': errors.nrc}"
+                 name="nrc"
+                 [(ngModel)]="materia.nrc" 
+                 (keyup)="changeNrc($event)"
+                 placeholder="Ej. 123456"
+                 mask="000000" />
+          <div class="invalid-feedback" *ngIf="errors.nrc">{{ errors.nrc }}</div>
+        </div>
+
+        <div class="col-md-5">
+          <label class="form-label">Nombre de la materia *</label>
+          <input type="text" 
+                 class="form-control" 
+                 [ngClass]="{'is-invalid': errors.nombre}"
+                 name="nombre" 
+                 [(ngModel)]="materia.nombre"
+                 (keypress)="soloLetras($event)"
+                 maxlength="80" 
+                 placeholder="Ej. Sistemas Operativos II" />
+          <div class="invalid-feedback" *ngIf="errors.nombre">{{ errors.nombre }}</div>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Sección *</label>
+          <input type="text" 
+                 class="form-control" 
+                 [ngClass]="{'is-invalid': errors.seccion}"
+                 name="seccion"
+                 [(ngModel)]="materia.seccion" 
+                 (keypress)="soloNumeros($event)"
+                 maxlength="3"
+                 placeholder="Ej. 101" />
+          <div class="invalid-feedback" *ngIf="errors.seccion">{{ errors.seccion }}</div>
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">Días *</label>
+          <div class="dias-checkbox-group">
+            <div class="form-check form-check-inline" *ngFor="let dia of dias_semana">
+              <mat-checkbox 
+                [checked]="isDiaSelected(dia)"
+                (change)="toggleDia(dia, $event)" 
+                color="primary">
+                {{ dia }}
+              </mat-checkbox>
+            </div>
+          </div>
+          </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Hora inicio *</label>
+          <mat-form-field appearance="outline" style="width:100%">
+            <input matInput 
+                   name="horaInicio" 
+                   [(ngModel)]="materia.hora_inicio" 
+                   [ngxMatTimepicker]="pickerInicio" 
+                   readonly />
+            <ngx-mat-timepicker #pickerInicio></ngx-mat-timepicker>
+            <button matSuffix mat-icon-button (click)="pickerInicio.open()" type="button">
+              <mat-icon>schedule</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+        
+        <div class="col-md-3">
+          <label class="form-label">Hora fin *</label>
+          <mat-form-field appearance="outline" style="width:100%">
+            <input matInput 
+                   name="horaFin" 
+                   [(ngModel)]="materia.hora_fin" 
+                   [ngxMatTimepicker]="pickerFin" 
+                   readonly />
+            <ngx-mat-timepicker #pickerFin></ngx-mat-timepicker>
+            <button matSuffix mat-icon-button (click)="pickerFin.open()" type="button">
+              <mat-icon>schedule</mat-icon>
+            </button>
+          </mat-form-field>
+          <div class="text-danger" *ngIf="errors.horario" style="font-size: 0.875em;">
+            {{ errors.horario }}
+          </div>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Salón</label>
+          <input type="text" 
+                 class="form-control" 
+                 name="salon" 
+                 [(ngModel)]="materia.salon" 
+                 maxlength="15" 
+                 placeholder="Ej. B203" />
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label">Créditos</label>
+          <input type="text" 
+                 class="form-control" 
+                 name="creditos" 
+                 [(ngModel)]="materia.creditos" 
+                 (keypress)="soloNumeros($event)"
+                 maxlength="2" 
+                 placeholder="Ej. 8" />
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">Programa educativo</label>
+          <mat-form-field appearance="outline" style="width:100%">
+            <mat-select name="programaEducativo" [(ngModel)]="materia.programa_educativo" placeholder="Selecciona un programa">
+              <mat-option *ngFor="let p of programas" [value]="p">{{ p }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">Profesor asignado *</label>
+          <mat-form-field appearance="outline" style="width:100%">
+            <mat-select name="profesorId" [(ngModel)]="materia.profesor_id" placeholder="Selecciona un profesor">
+              <mat-option *ngFor="let m of lista_maestros" [value]="m.id">
+                {{ m.nombre }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <div class="text-danger" *ngIf="errors.profesor_id" style="font-size: 0.875em;">
+            {{ errors.profesor_id }}
+          </div>
+          <div class="form-text" *ngIf="cargandoMaestros">Cargando maestros...</div>
+        </div>
+      </div>
+
+      <div class="row mt-4 text-center">
+        <div class="col-12">
+          <button type="button" class="btn btn-secondary me-3" (click)="regresar()">
+            Cancelar
+          </button>
+
+          <button *ngIf="!editar" type="button" class="btn btn-primary" (click)="registrar()">
+            Registrar Materia
+          </button>
+
+          <button *ngIf="editar" type="button" class="btn btn-warning" (click)="actualizar()">
+            Actualizar Materia
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </div>
+</div>
