@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
-import { Location } from '@angular/common';
+import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms'; // Importar ValidatorFn, ValidationErrors, AbstractControl
+import { ActivatedRoute, Router } from '@angular/router';
+import { FacadeService } from 'src/app/services/facade.service';
 import { MaestrosService } from 'src/app/services/maestros.service';
 import { MateriasService } from 'src/app/services/materias.service';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-registro-materias-screen',
@@ -10,229 +12,186 @@ import { MateriasService } from 'src/app/services/materias.service';
   styleUrls: ['./registro-materias-screen.component.scss']
 })
 export class RegistroMateriasScreenComponent implements OnInit {
-
-  // Variables principales
-  public materia: any = {};
+  
+  public titulo: string = "Registro de Materia";
   public editar: boolean = false;
-  public idMateria: Number = 0;
-  public errors: any = {};
-
-  // Catálogos y listas
+  public idMateria: number = 0;
+  
   public lista_maestros: any[] = [];
   public programas: string[] = [
     'Ingeniería en Ciencias de la Computación',
     'Licenciatura en Ciencias de la Computación',
     'Ingeniería en Tecnologías de la Información'
   ];
-  public dias_semana: string[] = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  public dias_semana: string[] = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-  // Para el control de la vista (loading, etc)
-  public cargandoMaestros: boolean = false;
+  public materiaForm: FormGroup;
 
   constructor(
-    private router: Router,
-    private location: Location,
-    public activatedRoute: ActivatedRoute,
+    private formBuilder: FormBuilder,
+    private materiasService: MateriasService,
     private maestrosService: MaestrosService,
-    private materiasService: MateriasService
-  ) { }
+    private facadeService: FacadeService,
+    private router: Router,
+    private activeRoute: ActivatedRoute,
+    private location: Location
+  ) {
+    this.materiaForm = this.formBuilder.group({
+      nrc: ['', [Validators.required, Validators.pattern('^[0-9]*$'), Validators.minLength(5), Validators.maxLength(5)]],
+      nombre: ['', [Validators.required, Validators.pattern('^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]*$')]],
+      seccion: ['', [Validators.required, Validators.pattern('^[0-9]*$'), Validators.maxLength(3)]],
+      dias: [[], [Validators.required]],
+      hora_inicio: ['', [Validators.required]],
+      hora_fin: ['', [Validators.required]],
+      salon: ['', [Validators.required, Validators.pattern('^[a-zA-Z0-9 ]*$'), Validators.maxLength(15)]],
+      programa_educativo: ['', [Validators.required]],
+      profesor_id: ['', [Validators.required]],
+      creditos: ['', [Validators.required, Validators.pattern('^[0-9]*$'), Validators.maxLength(2)]],
+    }, { validators: this.validarHorario }); // <--- Agregamos la validación grupal aquí
+  }
+
+  // Función de validación personalizada
+  public validarHorario: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+    const inicio = control.get('hora_inicio')?.value;
+    const fin = control.get('hora_fin')?.value;
+
+    // Validar solo si ambos tienen valor
+    if (inicio && fin) {
+      // Comparación de cadenas de tiempo (formato 24h HH:mm funciona bien con operadores < >)
+      if (inicio >= fin) {
+        return { horarioInvalido: true }; // Retorna error si inicio es mayor o igual a fin
+      }
+    }
+    return null; // Sin errores
+  };
 
   ngOnInit(): void {
-    // 1. Cargar catálogo de maestros
-    this.cargarMaestros();
-
-    // 2. Verificar si es edición o registro nuevo
-    if(this.activatedRoute.snapshot.params['id'] != undefined){
-      this.editar = true;
-      this.idMateria = this.activatedRoute.snapshot.params['id'];
-      console.log("ID Materia: ", this.idMateria);
-      
-      // Aquí deberías llamar al servicio para obtener los datos de la materia por ID
-      // Como ejemplo, simulamos la llamada:
-      this.materiasService.obtenerMateria(this.idMateria).subscribe(
-        (response: any) => {
-          this.materia = response;
-          // Aseguramos que los días vengan en formato correcto si es necesario
-          if(!this.materia.dias) this.materia.dias = [];
-        },
-        (error: any) => {
-          alert("Error al cargar la materia");
-        }
-      );
-
-    } else {
-      // Inicializamos el esquema vacío si es registro nuevo
-      this.limpiarFormulario();
+    // 1. Validar sesión
+    if (this.facadeService.getSessionToken() == "") {
+      this.router.navigate(["/"]);
     }
+
+    // 2. PASO 1: Obtener la lista de maestros (Prioridad Alta)
+    this.maestrosService.obtenerListaMaestros().subscribe(
+      (responseMaestros) => {
+        // Guardamos la lista
+        this.lista_maestros = responseMaestros;
+        // Formateamos los nombres para el select
+        this.lista_maestros.forEach(element => {
+          element.nombre_completo = element.user.first_name + " " + element.user.last_name;
+        });
+
+        // 3. PASO 2: Solo ahora verificamos si es edición
+        if (this.activeRoute.snapshot.params['id'] != undefined) {
+          this.editar = true;
+          this.idMateria = this.activeRoute.snapshot.params['id'];
+          this.titulo = "Actualizar Materia";
+
+          // 4. Llamamos a la materia (Ya es seguro porque tenemos la lista de maestros cargada)
+          this.materiasService.obtenerMateria(this.idMateria).subscribe(
+            (responseMateria) => {
+              console.log("Datos de la materia:", responseMateria);
+              const datos = { ...responseMateria };
+
+              // --- CORRECCIÓN DE PROFESOR ---
+              if (datos.profesor) {
+                if (typeof datos.profesor === 'object') {
+                  datos.profesor_id = datos.profesor.id;
+                } else {
+                  datos.profesor_id = datos.profesor;
+                }
+              }
+
+              // --- CORRECCIÓN DE HORARIOS ---
+              if(datos.hora_inicio && datos.hora_inicio.length > 5){
+                 datos.hora_inicio = datos.hora_inicio.substring(0, 5);
+              }
+              if(datos.hora_fin && datos.hora_fin.length > 5){
+                 datos.hora_fin = datos.hora_fin.substring(0, 5);
+              }
+              
+              // --- CORRECCIÓN DE DÍAS ---
+              if(!datos.dias){
+                datos.dias = [];
+              }
+
+              // Llenar el formulario
+              this.materiaForm.patchValue(datos);
+            },
+            (error) => { console.log("Error al obtener materia:", error); }
+          );
+        }
+      },
+      (error) => { console.log("Error al obtener maestros:", error); }
+    );
   }
 
-  // Función para inicializar/limpiar el objeto materia
-  public limpiarFormulario(){
-    this.materia = {
-      nrc: '',
-      nombre: '',
-      seccion: '',
-      dias: [], // Array para guardar los días seleccionados
-      hora_inicio: '',
-      hora_fin: '',
-      salon: '',
-      programa_educativo: '',
-      profesor_id: null,
-      creditos: null
-    };
-  }
-
-  public regresar(){
-    this.location.back();
+  public obtenerMaestros(){
+    this.maestrosService.obtenerListaMaestros().subscribe(
+      (response)=>{
+        this.lista_maestros = response;
+        this.lista_maestros.forEach(element => {
+          element.nombre_completo = element.user.first_name + " " + element.user.last_name;
+        });
+      },
+      (error)=>{ console.log(error); }
+    );
   }
 
   public registrar(){
-    // 1. Validar formulario
-    if(!this.validarFormulario()){
+    if(this.materiaForm.invalid){
+      this.materiaForm.markAllAsTouched();
+      alert("Por favor verifica los campos marcados en rojo.");
       return;
     }
-
-    // 2. Consumir servicio de registro
-    this.materiasService.registrarMateria(this.materia).subscribe(
-      (response) => {
-        alert("Materia registrada exitosamente");
-        console.log("Materia registrada: ", response);
-        this.router.navigate(["materias"]); // O la ruta donde listas las materias
-      },
-      (error) => {
-        alert("Error al registrar materia");
-        console.error("Error: ", error);
-      }
-    );
-  }
-
-  public actualizar(){
-    // 1. Validar formulario
-    if(!this.validarFormulario()){
-      return;
-    }
-
-    // 2. Consumir servicio de actualización
-    this.materiasService.actualizarMateria(this.materia).subscribe(
-      (response) => {
-        alert("Materia actualizada exitosamente");
-        console.log("Materia actualizada: ", response);
-        this.router.navigate(["materias"]);
-      },
-      (error) => {
-        alert("Error al actualizar materia");
-        console.error("Error: ", error);
-      }
-    );
-  }
-
-  // -------------------------------------------------------------------------
-  // Validaciones (Similar a como lo hace el servicio de alumnos, pero local)
-  // -------------------------------------------------------------------------
-  public validarFormulario(): boolean {
-    this.errors = {};
-
-    if(!this.materia.nrc || this.materia.nrc.length < 5){
-      this.errors.nrc = "El NRC es obligatorio y debe tener al menos 5 dígitos.";
-    }
-    if(!this.materia.nombre){
-      this.errors.nombre = "El nombre de la materia es obligatorio.";
-    }
-    if(!this.materia.seccion){
-      this.errors.seccion = "La sección es obligatoria.";
-    }
-    if(!this.materia.hora_inicio || !this.materia.hora_fin){
-      this.errors.horario = "Debe establecer hora de inicio y fin.";
-    }
-    if(this.materia.hora_inicio >= this.materia.hora_fin){
-      this.errors.horario = "La hora de fin debe ser mayor a la de inicio.";
-    }
-    if(!this.materia.profesor_id){
-      this.errors.profesor_id = "Debe seleccionar un profesor.";
-    }
-
-    // Retorna false si hay errores
-    if(Object.keys(this.errors).length > 0){
-      return false;
-    }
-    return true;
-  }
-
-  // -------------------------------------------------------------------------
-  // Funciones Auxiliares y de Formato
-  // -------------------------------------------------------------------------
-
-  // Carga y normaliza la lista de maestros (Lógica original conservada pero organizada)
-  public cargarMaestros() {
-    this.cargandoMaestros = true;
-    this.maestrosService.obtenerListaMaestros().subscribe({
-      next: (resp: any) => {
-        // CORRECCIÓN AQUÍ: Agregamos el tipo explicitamente
-        let lista: any[] = []; 
-        
-        // Lógica para detectar dónde viene el array en la respuesta
-        if (Array.isArray(resp)) lista = resp;
-        else if (resp.lista) lista = resp.lista;
-        else if (resp.data) lista = resp.data;
-        else if (resp.results) lista = resp.results;
-        
-        // Mapeo simplificado para el select
-        this.lista_maestros = lista.map((m: any) => {
-          const id = m.id || m.id_maestro || m.id_trabajador;
-          // Intentar obtener el nombre de varias propiedades posibles
-          let nombre = m.nombre || m.nombre_completo || m.full_name || 
-                       (m.user ? m.user.first_name + ' ' + m.user.last_name : 'Sin Nombre');
-          
-          return { id: id, nombre: nombre };
-        }).filter((m: any) => m.id != null);
-        
-        this.cargandoMaestros = false;
-      },
-      error: (err) => {
-        console.error('Error cargando maestros', err);
-        this.cargandoMaestros = false;
-      }
-    });
-  }
-
-  // Manejo de Checkboxes para días
-  public toggleDia(dia: string, event: any){
-    if(event.checked){
-      this.materia.dias.push(dia);
-    }else{
-      this.materia.dias = this.materia.dias.filter((d: string) => d !== dia);
+    // ... Resto de la lógica de registro (igual que antes)
+    const datos = this.materiaForm.value;
+    if(this.editar){
+      datos.id = this.idMateria;
+      this.materiasService.actualizarMateria(datos).subscribe(
+        (response)=>{
+          alert("Materia actualizada correctamente");
+          this.router.navigate(['/lista-materias']);
+        }, 
+        (error)=>{ alert("Error al actualizar"); }
+      );
+    } else {
+      this.materiasService.validarNRC(datos.nrc).subscribe(
+        (res) => {
+          if(!res.disponible){
+            alert("El NRC ya existe");
+            this.materiaForm.get('nrc')?.setErrors({'duplicate': true});
+          } else {
+            this.materiasService.registrarMateria(datos).subscribe(
+              (response)=>{
+                alert("Materia registrada correctamente");
+                this.router.navigate(['/lista-materias']);
+              },
+              (error)=>{ alert("Error al registrar"); }
+            );
+          }
+        }
+      );
     }
   }
 
-  // Verificación de si un día está seleccionado (útil para el modo Editar)
-  public isDiaSelected(dia: string): boolean {
-    return this.materia.dias ? this.materia.dias.includes(dia) : false;
+  public regresar(){ this.location.back(); }
+
+  public soloNumeros(event: any) {
+    const pattern = /[0-9]/;
+    const inputChar = String.fromCharCode(event.charCode);
+    if (!pattern.test(inputChar)) { event.preventDefault(); }
+  }
+  public soloLetras(event: any) {
+    const pattern = /[a-zA-ZáéíóúÁÉÍÓÚñÑ ]/;
+    const inputChar = String.fromCharCode(event.charCode);
+    if (!pattern.test(inputChar)) { event.preventDefault(); }
+  }
+  public alfaNumerico(event: any) {
+    const pattern = /[a-zA-Z0-9 ]/;
+    const inputChar = String.fromCharCode(event.charCode);
+    if (!pattern.test(inputChar)) { event.preventDefault(); }
   }
 
-  // Validar NRC en tiempo real (Opcional, si quieres mantener la validación asíncrona)
-  public changeNrc(event: any){
-    // Solo permitir números
-    const value = event.target.value.replace(/[^0-9]/g, '');
-    this.materia.nrc = value;
-  }
-
-  // Validación de solo letras para inputs de texto
-  public soloLetras(event: KeyboardEvent) {
-    const charCode = event.key.charCodeAt(0);
-    if (
-      !(charCode >= 65 && charCode <= 90) && 
-      !(charCode >= 97 && charCode <= 122) && 
-      charCode !== 32 
-    ) {
-      event.preventDefault();
-    }
-  }
-  
-  // Validación de solo números
-  public soloNumeros(event: KeyboardEvent) {
-    const charCode = event.key.charCodeAt(0);
-    if (charCode < 48 || charCode > 57) {
-      event.preventDefault();
-    }
-  }
+  get f() { return this.materiaForm.controls; }
 }

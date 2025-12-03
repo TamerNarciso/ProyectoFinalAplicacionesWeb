@@ -14,7 +14,6 @@ export class MateriasService {
     private facadeService: FacadeService
   ) { }
 
-  // Función para obtener el esquema vacío (ayuda a limpiar el componente)
   public esquemaMateria(){
     return {
       'nrc': '',
@@ -30,70 +29,64 @@ export class MateriasService {
     }
   }
 
-  // Validar NRC (Manteniendo la lógica que tenías)
+  // Validar NRC
   public validarNRC(nrc: string): Observable<any> {
     const token = this.facadeService.getSessionToken();
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + token
     });
-
+    // Asegúrate de agregar esta ruta en tu urls.py
     return this.http.get<any>(`${environment.url_api}/materias-validar/?nrc=${nrc}`, { headers: headers });
   }
 
-  // Obtener lista completa de materias
+  // CORREGIDO: Apunta a 'lista-materias/'
   public obtenerListaMaterias(): Observable<any> {
     const token = this.facadeService.getSessionToken();
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + token
     });
-
-    return this.http.get<any>(`${environment.url_api}/materias`, { headers: headers });
+    return this.http.get<any>(`${environment.url_api}/lista-materias/`, { headers: headers });
   }
 
-  // Obtener una sola materia por ID (Para la edición)
+  // CORREGIDO: Usa Query Param (?id=...) en lugar de URL param
   public obtenerMateria(id: Number): Observable<any> {
     const token = this.facadeService.getSessionToken();
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + token
     });
-
-    return this.http.get<any>(`${environment.url_api}/materias/${id}`, { headers: headers });
+    return this.http.get<any>(`${environment.url_api}/materias/?id=${id}`, { headers: headers });
   }
 
-  // Registrar una nueva materia
+  // Registrar (POST a /materias/) - ESTE ESTABA BIEN
   public registrarMateria(materia: any): Observable<any> {
     const token = this.facadeService.getSessionToken();
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + token
     });
-
-    return this.http.post<any>(`${environment.url_api}/materias`, materia, { headers: headers });
+    return this.http.post<any>(`${environment.url_api}/materias/`, materia, { headers: headers });
   }
 
-  // Actualizar una materia existente
+  // CORREGIDO: PUT a /materias/ (sin ID en URL, el ID va en el body)
   public actualizarMateria(materia: any): Observable<any> {
     const token = this.facadeService.getSessionToken();
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + token
     });
-
-    // Se asume que el ID viene dentro del objeto materia o se pasa en la URL
-    return this.http.put<any>(`${environment.url_api}/materias/${materia.id}`, materia, { headers: headers });
+    return this.http.put<any>(`${environment.url_api}/materias/`, materia, { headers: headers });
   }
 
-  // Eliminar materia
+  // CORREGIDO: DELETE con Query Param (?id=...)
   public eliminarMateria(id: Number): Observable<any> {
     const token = this.facadeService.getSessionToken();
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + token
     });
-
-    return this.http.delete<any>(`${environment.url_api}/materias/${id}`, { headers: headers });
+    return this.http.delete<any>(`${environment.url_api}/materias/?id=${id}`, { headers: headers });
   }
 }

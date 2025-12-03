@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { FormsModule } from '@angular/forms';
+// 1. Agregar ReactiveFormsModule aquí
+import { FormsModule, ReactiveFormsModule } from '@angular/forms'; 
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
@@ -28,17 +29,13 @@ import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
-// 1. AGREGAR IMPORTACIÓN DEL DIALOG
-import { MatDialogModule } from '@angular/material/dialog'; // <--- AGREGAR ESTO
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatSidenavModule } from '@angular/material/sidenav'; // Importante para el sidebar
 
 // Paginación
 import { MatPaginatorIntl, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
-// Para el paginator en español
 import { getSpanishPaginatorIntl } from './shared/spanish-paginator-intl';
-
-// IMPORTANTE: añade el módulo de Sidenav
-import { MatSidenavModule } from '@angular/material/sidenav';
 
 // Modulo para las gráficas
 import { NgChartsModule } from 'ng2-charts';
@@ -58,7 +55,7 @@ import { SidebarComponent } from './partials/sidebar/sidebar.component';
 import { EliminarUserModalComponent } from './modals/eliminar-user-modal/eliminar-user-modal.component';
 import { GraficasScreenComponent } from './screens/graficas-screen/graficas-screen.component';
 import { RegistroMateriasScreenComponent } from './screens/registro-materias-screen/registro-materias-screen.component';
-
+import { MateriasScreenComponent } from './screens/materias-screen/materias-screen.component'; // Asegúrate de importar tu componente de tabla
 
 @NgModule({
   declarations: [
@@ -78,13 +75,15 @@ import { RegistroMateriasScreenComponent } from './screens/registro-materias-scr
     SidebarComponent,
     EliminarUserModalComponent ,
     GraficasScreenComponent,
-    RegistroMateriasScreenComponent
+    RegistroMateriasScreenComponent,
+    MateriasScreenComponent // Asegúrate de declarar tu componente de tabla
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
     FormsModule,
+    ReactiveFormsModule, // 2. Agrégalo aquí en los imports
     HttpClientModule,
     MatCardModule,
     MatIconModule,
@@ -93,10 +92,6 @@ import { RegistroMateriasScreenComponent } from './screens/registro-materias-scr
     MatFormFieldModule,
     MatInputModule,
     MatDatepickerModule,
-      MatCardModule,
-      MatIconModule,
-      MatButtonModule,
-      MatSelectModule,
     MatNativeDateModule,
     MatCheckboxModule,
     MatSelectModule,
@@ -106,7 +101,8 @@ import { RegistroMateriasScreenComponent } from './screens/registro-materias-scr
     MatSortModule,
     MatDialogModule,
     NgChartsModule,
-    NgxMatTimepickerModule
+    NgxMatTimepickerModule,
+    NgxMaskDirective // Importa la directiva si la usas en el HTML
   ],
   providers: [
     CookieService,

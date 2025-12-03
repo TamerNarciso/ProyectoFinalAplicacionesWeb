@@ -1,5 +1,4 @@
 <div class="navbar-sidebar-wrapper">
-  <!-- Desktop sidebar -->
   <nav class="scoop-side-navbar" *ngIf="!isMobileView">
     <ul class="scoop-navbar-list">
       <li *ngIf="canSeeRegisterItem()" routerLink="/registro-usuarios" routerLinkActive="active"
@@ -23,7 +22,7 @@
         <span class="material-icons">bar_chart</span>
         <span>Gráficas</span>
       </li>
-      <!-- Materias dropdown (desktop) -->
+      
       <li *ngIf="canSeeTeacherItems()" class="scoop-navbar-item" (click)="toggleMenu('materias')">
         <span class="material-icons">library_books</span>
         <span style="flex:1">Materias</span>
@@ -34,7 +33,12 @@
           <span class="material-icons">playlist_add</span>
           <span>Registro de Materias</span>
         </li>
+        <li routerLink="/lista-materias" routerLinkActive="active" class="scoop-navbar-item">
+          <span class="material-icons">list_alt</span>
+          <span>Tabla de Materias</span>
+        </li>
       </ul>
+
       <li *ngIf="canSeeTeacherItems()" routerLink="/eventos-academicos" routerLinkActive="active"
         class="scoop-navbar-item">
         <span class="material-icons">event</span>
@@ -47,7 +51,6 @@
     </button>
   </nav>
 
-  <!-- Scoop-style top navbar -->
   <nav class="scoop-navbar">
     <button class="dashboard-toggle-btn" *ngIf="isMobileView" (click)="toggleSidebar()" aria-label="Abrir menú">
       <span class="material-icons">menu_open</span>
@@ -59,7 +62,6 @@
     </div>
   </nav>
 
-  <!-- Mobile sidebar overlay and menu -->
   <ng-container *ngIf="isMobileView">
     <div class="mobile-sidebar-overlay" [ngClass]="{'mobile-open': mobileOpen}" (click)="closeSidebar()"></div>
     <nav class="scoop-side-navbar" [ngClass]="{'mobile-open': mobileOpen}">
@@ -90,17 +92,23 @@
           <span class="material-icons">bar_chart</span>
           <span>Gráficas</span>
         </li>
-        <!-- Materias dropdown (mobile) -->
+
         <li *ngIf="canSeeTeacherItems()" class="scoop-navbar-item" (click)="toggleMenu('materias')">
           <span class="material-icons">library_books</span>
           <span style="flex:1">Materias</span>
           <span class="material-icons">{{ expandedMenu === 'materias' ? 'expand_less' : 'expand_more' }}</span>
         </li>
-        <li *ngIf="canSeeTeacherItems() && expandedMenu === 'materias'" class="scoop-navbar-item"
-            routerLink="/registro-materias" routerLinkActive="active" (click)="closeSidebar(); closeMenu()">
-          <span class="material-icons">playlist_add</span>
-          <span>Registro de Materias</span>
-        </li>
+        <ng-container *ngIf="canSeeTeacherItems() && expandedMenu === 'materias'">
+            <li class="scoop-navbar-item" routerLink="/registro-materias" routerLinkActive="active" (click)="closeSidebar(); closeMenu()">
+            <span class="material-icons">playlist_add</span>
+            <span>Registro de Materias</span>
+            </li>
+            <li class="scoop-navbar-item" routerLink="/lista-materias" routerLinkActive="active" (click)="closeSidebar(); closeMenu()">
+            <span class="material-icons">list_alt</span>
+            <span>Tabla de Materias</span>
+            </li>
+        </ng-container>
+
         <li *ngIf="canSeeTeacherItems()" routerLink="/eventos-academicos" routerLinkActive="active"
           class="scoop-navbar-item" (click)="closeSidebar()">
           <span class="material-icons">event</span>
@@ -113,4 +121,4 @@
       </button>
     </nav>
   </ng-container>
-  <!-- end navbar-sidebar-wrapper -->
+</div>

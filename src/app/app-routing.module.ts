@@ -10,7 +10,8 @@ import { HomeScreenComponent } from './screens/home-screen/home-screen.component
 import { MaestrosScreenComponent } from './screens/maestros-screen/maestros-screen.component';
 import { GraficasScreenComponent } from './screens/graficas-screen/graficas-screen.component';
 import { RegistroMateriasScreenComponent } from './screens/registro-materias-screen/registro-materias-screen.component';
-
+// 1. Importar el nuevo componente
+import { MateriasScreenComponent } from './screens/materias-screen/materias-screen.component'; 
 
 const routes: Routes = [
   {
@@ -28,17 +29,18 @@ const routes: Routes = [
     component: DashboardLayoutComponent,
     children: [
       { path: 'home', component: HomeScreenComponent },
-      { path: 'administrador', component: AdminScreenComponent }, // Keep legacy route
+      { path: 'administrador', component: AdminScreenComponent },
       { path: 'alumnos', component: AlumnosScreenComponent },
       { path: 'maestros', component: MaestrosScreenComponent },
       { path: 'graficas', component: GraficasScreenComponent },
-      { path: 'registro-materias', component: RegistroMateriasScreenComponent }
-
+      { path: 'registro-materias', component: RegistroMateriasScreenComponent },
+      // 2. Agregar ruta para edición (opcional, para futuro uso)
+      { path: 'registro-materias/:id', component: RegistroMateriasScreenComponent }, 
+      // 3. Agregar la ruta de la lista
+      { path: 'lista-materias', component: MateriasScreenComponent } 
     ]
   },
-  // fallback route
   { path: '**', redirectTo: 'login' }
-
 ];
 
 @NgModule({

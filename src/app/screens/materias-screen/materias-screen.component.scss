@@ -1,0 +1,104 @@
+// Importar estilos base si es necesario, o definir los mismos que en alumnos/maestros
+
+.wrapper{
+  height: auto;
+}
+
+.main-content-materias {
+  margin-left: 220px;
+  transition: margin-left 0.3s;
+}
+
+// Fondo decorativo similar al de maestros/alumnos
+.header-home-materias {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+}
+
+.body-materias {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.title-perfil,
+.title-table {
+  display: block;            /* nos permite controlar separación con margin */
+  line-height: 1.1;
+  text-wrap: balance;        /* evita líneas huérfanas (soporte moderno) */
+  overflow-wrap: anywhere;   /* defensa ante nombres muy largos */
+  letter-spacing: 0;
+  text-transform: capitalize;
+  opacity: 1;
+  font-family: Nexa-Bold;
+}
+
+/* Saludo: “Bienvenido {user}” (base desktop/tablet) */
+.title-perfil {
+  margin-left: 3rem;
+  font-size: clamp(1.375rem, 1.1rem + 1.2vw, 2.25rem); /* ~22–36px */
+  text-align: left;
+  color: #231F20;
+}
+
+/* Título de la card (alerta) */
+.title-table {
+  margin-left: 3rem;
+  font-size: clamp(1.125rem, 0.95rem + 0.9vw, 1.875rem); /* ~18–30px */
+  text-align: center;
+  color: #231F20;
+}
+
+
+// Estilos de la tabla y scroll
+.table-scroll-wrapper {
+  overflow-x: auto;
+  width: 100%;
+  padding-bottom: 10px;
+}
+
+table {
+  width: 100%;
+}
+
+th.mat-header-cell {
+  background-color: #003b5c; // Azul institucional
+  color: white;
+  font-family: 'Nexa Bold', sans-serif;
+  font-size: 14px;
+}
+
+td.mat-cell {
+  font-family: 'Nexa Light', sans-serif;
+  padding: 10px;
+}
+
+// Iconos de acciones
+.td-editar {
+  color: #007bff; // Azul bootstrap
+  text-align: center;
+  &:hover {
+    color: #0056b3;
+  }
+}
+
+.td-eliminar {
+  color: #dc3545; // Rojo bootstrap
+  text-align: center;
+  &:hover {
+    color: #a71d2a;
+  }
+}
+
+// Ajustes responsive
+@media (max-width: 768px) {
+  .title-perfil {
+    font-size: 18px;
+    margin-left: 10px;
+  }
+}
