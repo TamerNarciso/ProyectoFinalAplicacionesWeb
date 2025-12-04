@@ -1,13 +1,16 @@
-// Variables
-$font-bold: 'Nexa Bold', sans-serif;
-$font-light: 'Nexa Light', sans-serif;
-$primary-color: #003b5c; // Azul Institucional
-$bg-color: #f4f7f6; // Gris muy suave para el fondo general
+
+.main-content-maestros {
+  margin-left: 220px;
+  transition: margin-left 0.3s;
+
+  @media (max-width: 991px) {
+  margin-left: 0;
+
+}
+}
 
 .wrapper {
   min-height: 100vh;
-  background-color: $bg-color;
-  font-family: $font-light;
 }
 
 // --- Encabezado ---
@@ -16,32 +19,19 @@ $bg-color: #f4f7f6; // Gris muy suave para el fondo general
 }
 
 .header-registro {
-  background-image: url('../../../assets/images/fondo-azul.jpg');
-  background-size: cover;
-  background-position: center;
   height: 280px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
 
-  // Overlay degradado para mejor lectura
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(rgba(0, 59, 92, 0.7), rgba(0, 20, 40, 0.8));
-  }
+
 }
 
 .title-registro {
   position: relative;
   z-index: 2;
-  color: #fff;
-  font-family: $font-bold;
+  color: #000;
   font-size: 2.8rem;
   letter-spacing: 1px;
   text-shadow: 0 4px 6px rgba(0,0,0,0.3);
@@ -76,14 +66,12 @@ form {
     
     // Tipografía dentro del input
     .mat-input-element {
-      font-family: $font-light;
       font-size: 1rem;
       color: #333;
     }
 
     // Color del Label
     .mat-form-field-label {
-      font-family: $font-light;
       color: #666;
     }
   }
@@ -91,12 +79,10 @@ form {
   // Estilo para el icono del reloj (Timepicker)
   mat-icon {
     cursor: pointer;
-    color: $primary-color;
     transition: transform 0.2s;
 
     &:hover {
       transform: scale(1.1);
-      color: lighten($primary-color, 10%);
     }
   }
 
@@ -125,7 +111,6 @@ form {
 button {
   min-width: 160px;
   height: 50px;
-  font-family: $font-bold !important;
   font-size: 1rem;
   border-radius: 8px !important; // Bordes más redondeados
   text-transform: uppercase;

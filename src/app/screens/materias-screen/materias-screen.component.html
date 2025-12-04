@@ -12,7 +12,6 @@
 
     <div class="container">
       <div class="row mt-3 mb-5" style="text-align: center">
-        
         <div class="col-12">
           <div class="alert alert-primary" role="alert">
             <span class="title-table">Lista de Materias Registradas</span>
@@ -28,7 +27,7 @@
         <ng-container *ngIf="lista_materias.length > 0; else noData">
           <div class="table-scroll-wrapper">
             <div class="mat-elevation-z8">
-              <table mat-table [dataSource]="dataSource" matSort style="width: 100%">
+              <table mat-table [dataSource]="dataSource" matSort style="min-width: 1200px; width: 100%">
 
                 <ng-container matColumnDef="nrc">
                   <th mat-header-cell *matHeaderCellDef mat-sort-header> NRC </th>
